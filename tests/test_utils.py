@@ -1,6 +1,6 @@
 import pytest
 
-from fmconfig.utils import get_graphics_path, get_system
+from fmconfig.utils import get_graphics_path, get_system, get_username
 
 
 class TestGetSystem:
@@ -31,13 +31,43 @@ class TestGetSystem:
         with pytest.raises(OSError, match="Unsupported operating system"):
             get_system()
 
+class TestGetUsername:
+    def test_get_username_from_env(self, monkeypatch: pytest.MonkeyPatch):
+        # Given
+        # A username as environment variable
+        expected = "testuser"
+        monkeypatch.setenv("USER", expected)
+
+        # When
+        # Calling the function
+        actual = get_username()
+
+        # Then
+        # It is as expected
+        assert actual == expected
+
+    def test_get_username_from_pwd(self, monkeypatch: pytest.MonkeyPatch):
+        # Given
+        # A username as environment variable
+        expected = "testuser"
+        monkeypatch.delenv("USER", raising=False)
+        monkeypatch.setattr("os.geteuid", lambda: 1000)
+        monkeypatch.setattr("pwd.getpwuid", lambda x: type('p', (object,), {'pw_name': expected}))
+
+        # When
+        # Calling the function
+        actual = get_username()
+
+        # Then
+        # It is as expected
+        assert actual == expected
 
 class TestGetGraphicPath:
     def test_get_graphics_path_mac(self, monkeypatch: pytest.MonkeyPatch):
         # Given
         # MacOS system and a username
         monkeypatch.setattr("platform.system", lambda: "Darwin")
-        monkeypatch.setattr("os.getlogin", lambda: "testuser")
+        monkeypatch.setenv("USER", "testuser")
 
         # When
         # Calling the function to get the graphics path
