@@ -10,7 +10,7 @@ def test_app(monkeypatch: pytest.MonkeyPatch):
     # Given
     # MacOS system
     expected = "Darwin"
-    monkeypatch.setattr("platform.system", lambda: expected)
+    monkeypatch.setattr("fmconfig.utils.get_system", lambda: expected)
 
     # When
     # Invoking the app
